@@ -44,7 +44,7 @@ bool PlannerCore::planAStar(
 
     auto isValid = [&](int x, int y) {
         return x >= 0 && y >= 0 && x < static_cast<int>(width) && y < static_cast<int>(height) &&
-               grid.data[y * width + x] >= 0 && grid.data[y * width + x] < 50; // min cost to be considered an obstacle
+               grid.data[y * width + x] >= 0 && grid.data[y * width + x] < 30; // min cost to be considered an obstacle
     };
 
     auto heuristic = [&](int x, int y) {
