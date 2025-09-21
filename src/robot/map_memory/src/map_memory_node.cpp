@@ -50,8 +50,6 @@ void MapMemoryNode::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
     std::pow(y_current - last_y_, 2)
   );
 
-  RCLCPP_INFO(this->get_logger(), "Distance since last update: %f", distance);
-
   if (distance >= 1.5 && have_costmap_) {
     if (!map_memory_.getGlobalMap().data.size()) {
       map_memory_.initializeGlobalMap(last_costmap_, -15.0, -15.0); // or set origin as needed
@@ -68,13 +66,10 @@ void MapMemoryNode::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
 }
 
 void MapMemoryNode::timerCallback() {
-  RCLCPP_INFO(this->get_logger(), "Timer callback triggered");
   if (map_memory_.getGlobalMap().data.size() && should_update_map_) {
       map_pub_->publish(map_memory_.getGlobalMap());
       should_update_map_ = false;
       RCLCPP_INFO(this->get_logger(), "Published global map!");
-  } else {
-      RCLCPP_WARN(this->get_logger(), "Global map is empty, not publishing");
   }
 }
 
