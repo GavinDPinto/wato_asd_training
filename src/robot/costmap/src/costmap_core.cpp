@@ -42,7 +42,7 @@ void CostmapCore::convertToGrid(double range, double angle, double robot_x, doub
 }
 
 void CostmapCore::inflateObstacles() {
-    const double inflation_radius = 1.0; // meters
+    const double inflation_radius = 1.5; // meters
     const int max_cost = 99;
     int inflation_cells = static_cast<int>(inflation_radius / resolution_);
 
