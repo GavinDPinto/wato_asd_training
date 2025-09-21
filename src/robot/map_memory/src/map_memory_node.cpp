@@ -50,7 +50,7 @@ void MapMemoryNode::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
     std::pow(y_current - last_y_, 2)
   );
 
-  if (distance >= 1.5 && have_costmap_) {
+  if ((distance >= 1.5 || first_costmap_) && have_costmap_) { // ensures a memory map is published on initialization
     if (!map_memory_.getGlobalMap().data.size()) {
       map_memory_.initializeGlobalMap(last_costmap_, -15.0, -15.0); // or set origin as needed
     }
@@ -58,6 +58,7 @@ void MapMemoryNode::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
     last_x_ = x_current;
     last_y_ = y_current;
     have_costmap_ = false; // Only merge once per movement
+    first_costmap_ = false;
     should_update_map_ = true;
     RCLCPP_INFO(this->get_logger(), "Merged costmap into global map.");
   }
@@ -66,6 +67,7 @@ void MapMemoryNode::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
 }
 
 void MapMemoryNode::timerCallback() {
+  RCLCPP_INFO(this->get_logger(), "Timer callback triggered");
   if (map_memory_.getGlobalMap().data.size() && should_update_map_) {
       map_pub_->publish(map_memory_.getGlobalMap());
       should_update_map_ = false;
