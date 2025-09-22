@@ -31,6 +31,16 @@ void MapMemoryNode::costmapCallback(const nav_msgs::msg::OccupancyGrid::SharedPt
   
   last_costmap_ = *msg;
   have_costmap_ = true;
+  if (!first_costmap_received_) {
+    first_costmap_received_ = true;
+    first_costmap_time_ = this->now();
+  }
+  if (!map_memory_.getGlobalMap().data.size()) {
+    map_memory_.initializeGlobalMap(last_costmap_, -15.0, -15.0); // or set origin as needed
+  }
+
+  map_memory_.decayMemory();
+
 }
 
 void MapMemoryNode::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
@@ -50,28 +60,30 @@ void MapMemoryNode::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
     std::pow(y_current - last_y_, 2)
   );
 
-  if ((distance >= 1.5 || first_costmap_) && have_costmap_) { // ensures a memory map is published on initialization
-    if (!map_memory_.getGlobalMap().data.size()) {
-      map_memory_.initializeGlobalMap(last_costmap_, -15.0, -15.0); // or set origin as needed
-    }
+  if (distance >= 1.5 && have_costmap_) { // ensures a memory map is published on initialization
     map_memory_.mergeCostmap(last_costmap_);
     last_x_ = x_current;
     last_y_ = y_current;
-    have_costmap_ = false; // Only merge once per movement
-    first_costmap_ = false;
     should_update_map_ = true;
     RCLCPP_INFO(this->get_logger(), "Merged costmap into global map.");
   }
-
-
 }
 
 void MapMemoryNode::timerCallback() {
   RCLCPP_INFO(this->get_logger(), "Timer callback triggered");
-  if (map_memory_.getGlobalMap().data.size() && should_update_map_) {
-      map_pub_->publish(map_memory_.getGlobalMap());
-      should_update_map_ = false;
-      RCLCPP_INFO(this->get_logger(), "Published global map!");
+  if (!first_costmap_received_) return;
+
+  // Wait for 500 ms after first costmap
+  if ((this->now() - first_costmap_time_).seconds() * 1000.0 < initial_publish_delay_ms_) {
+    return;
+  }
+
+  // Now safe to publish
+  if (should_update_map_ && map_memory_.getGlobalMap().data.size() > 0) {
+    map_memory_.mergeCostmap(last_costmap_);
+    have_costmap_ = false; // Only merge once per movement
+    map_pub_->publish(map_memory_.getGlobalMap());
+    should_update_map_ = false;
   }
 }
 

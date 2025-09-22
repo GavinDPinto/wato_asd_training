@@ -17,8 +17,11 @@ private:
 
   nav_msgs::msg::OccupancyGrid last_costmap_;
   bool have_costmap_ = false;
-  bool should_update_map_ = false;
-  bool first_costmap_ = true;
+  bool should_update_map_ = true;
+
+  bool first_costmap_received_ = false;
+  rclcpp::Time first_costmap_time_;
+  double initial_publish_delay_ms_ = 1000;
 
   rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr map_pub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
