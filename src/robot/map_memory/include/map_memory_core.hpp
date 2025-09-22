@@ -12,6 +12,7 @@ class MapMemoryCore {
     explicit MapMemoryCore(const rclcpp::Logger& logger);
     void initializeGlobalMap(const nav_msgs::msg::OccupancyGrid & costmap, double origin_x, double origin_y);
     void mergeCostmap(const nav_msgs::msg::OccupancyGrid & costmap);
+    void decayMemory();
     const nav_msgs::msg::OccupancyGrid &getGlobalMap() const { 
       return global_map_; 
     }
@@ -20,6 +21,7 @@ class MapMemoryCore {
     rclcpp::Logger logger_;
     nav_msgs::msg::OccupancyGrid global_map_;
     bool global_map_initialized_ = false;
+    double decay_rate_ = 0.1;
 };
 
 }  
