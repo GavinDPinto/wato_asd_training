@@ -44,7 +44,7 @@ bool PlannerCore::planAStar(
 
     auto isValid = [&](int x, int y) {
         return x >= 0 && y >= 0 && x < static_cast<int>(width) && y < static_cast<int>(height) &&
-               grid.data[y * width + x] >= 0 && grid.data[y * width + x] < 30; // min cost to be considered an obstacle
+               grid.data[y * width + x] >= 0 && grid.data[y * width + x] < 25; // min cost to be considered an obstacle
     };
 
     auto heuristic = [&](int x, int y) {
@@ -80,14 +80,16 @@ bool PlannerCore::planAStar(
             int ny = current.y + dy[dir];
             GridIndex neighbor{nx, ny};
             if (!isValid(nx, ny)) continue;
-            double new_cost = cost_so_far[current] + ((dir % 2 == 0) ? 1.0 : std::sqrt(2.0));
+            int cell_cost = grid.data[ny * width + nx];
+            double move_cost = (dir % 2 == 0) ? 1.0 : std::sqrt(2.0);
+            double new_cost = cost_so_far[current] + move_cost + cell_cost / 25.0; // scale as needed
             if (!cost_so_far.count(neighbor) || new_cost < cost_so_far[neighbor]) {
                 cost_so_far[neighbor] = new_cost;
                 double priority = new_cost + heuristic(nx, ny);
                 open.emplace(priority, neighbor);
                 came_from[neighbor] = current;
             }
-        }
+        }   
     }
 
     if (!found) {
