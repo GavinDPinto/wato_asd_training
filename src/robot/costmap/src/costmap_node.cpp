@@ -18,17 +18,8 @@ CostmapNode::CostmapNode() : Node("costmap"), costmap_(robot::CostmapCore(this->
   );
   costmap_pub_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>(
     "/costmap", 10);
-  // timer_ = this->create_wall_timer(std::chrono::milliseconds(5000), std::bind(&CostmapNode::publishMessage, this));
-}
+  }
  
-// Define the timer to publish a message every 500ms
-// void CostmapNode::publishMessage() {
-//   auto message = std_msgs::msg::String();
-//   message.data = "Hello, ROS 2!";
-//   RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
-//   string_pub_->publish(message);
-// }
-
 void CostmapNode::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
     robot_x_ = msg->pose.pose.position.x;
     robot_y_ = msg->pose.pose.position.y;
